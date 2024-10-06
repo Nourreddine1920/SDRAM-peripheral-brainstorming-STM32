@@ -1,3 +1,5 @@
+# SDRAM peripheral brainstorming to simple re-use
+
 # Advantages of Combining Global and Unitary APIs
 
 ## Global Configuration
@@ -25,7 +27,9 @@ void SDRAM_GlobalInit(void)
     SDRAM_MemConfig.MemoryDataWidth     = FMC_SDRAM_MEM_BUS_WIDTH_16;    // 16-bit bus
     SDRAM_MemConfig.InternalBankNumber  = FMC_SDRAM_INTERN_BANKS_NUM_4;  // 4 banks
     SDRAM_MemConfig.CASLatency          = FMC_SDRAM_CAS_LATENCY_3;       // CAS latency 3
+    SDRAM_MemConfig.CASLatency          = FMC_SDRAM_CAS_LATENCY_3;       // CAS latency 3
     SDRAM_MemConfig.WriteProtection     = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
+    SDRAM_MemConfig.SDClockPeriod       = FMC_SDRAM_CLOCK_PERIOD_2;      // Clock period 2
     SDRAM_MemConfig.SDClockPeriod       = FMC_SDRAM_CLOCK_PERIOD_2;      // Clock period 2
     SDRAM_MemConfig.ReadBurst           = FMC_SDRAM_RBURST_ENABLE;       // Enable read burst
     SDRAM_MemConfig.ReadPipeDelay       = FMC_SDRAM_RPIPE_DELAY_1;       // 1 cycle delay
@@ -46,6 +50,15 @@ void SDRAM_GlobalInit(void)
         Error_Handler();
     }
 }
+```
+## Unitary Configuration
+Runtime Flexibility: Users can adjust specific parameters dynamically at runtime without resetting the entire configuration, making the SDRAM interface more adaptable.
+Granular Control: Provides advanced users with the ability to control specific parameters (e.g., CAS latency, column bits) for optimization, based on the application’s current requirements, like switching between low-power and high-performance modes.
+Perfect for Dynamic Systems: For applications that work with external memories or need to change SDRAM configurations depending on different operating modes (e.g., high performance vs. low power), unitary APIs provide this critical capability.
+
+Example of Unitary API for Memory Configuration
+
+```c
 ```
 ## Unitary Configuration
 Runtime Flexibility: Users can adjust specific parameters dynamically at runtime without resetting the entire configuration, making the SDRAM interface more adaptable.
@@ -94,7 +107,11 @@ void SDRAM_SetColumnBits(uint32_t column_bits)
 ```
 
 Example of Unitary API for Timing Configuration
+```
 
+Example of Unitary API for Timing Configuration
+
+```c
 ```c
 Copier le code
 void SDRAM_SetRowCycleDelay(uint32_t delay)
@@ -144,6 +161,30 @@ When switching to low-power mode, the timing parameters and memory width might n
 If working with an external memory (such as Flash or another SDRAM chip), users could modify the SDRAM interface timing to optimize communication with that specific memory device.
 - Example of Switching Between High-Performance and Low-Power Modes
 ```c
+```
+### Key Benefits for SDRAM and External Memory Management
+#### Best of Both Worlds
+- By offering both global and unitary APIs, you cater to both novice users (who want simple initialization) and advanced users (who need to tweak specific parameters).
+Novice users can stick with the global configuration, while more experienced developers can use the unitary APIs to modify settings as needed.
+Better Performance
+
+- The ability to fine-tune SDRAM at runtime helps optimize the system for different use cases. For example, an application can adjust the CAS latency to match external memory characteristics or switch memory configurations when working with different devices.
+User Experience
+
+- Offering this level of flexibility enhances the user experience by giving them the freedom to adapt SDRAM performance and behavior to their needs.
+It also improves compatibility with external memories by adjusting timing and memory parameters to match the specific requirements of external SDRAM or other connected memory components.
+## Practical Example
+### Imagine a scenario where an embedded system switches between different modes of operation—such as deep sleep mode, active data processing mode, or external memory interface. With both global and unitary APIs, you can manage SDRAM configuration effectively:
+
+- Global Configuration: When the system boots up, the SDRAM can be initialized with default timing and memory parameters using a global configuration.
+
+- Unitary Configuration:
+
+When switching to data processing mode, the application might need to optimize for speed, increasing the CAS latency or expanding the data bus width.
+When switching to low-power mode, the timing parameters and memory width might need to be adjusted to reduce power consumption.
+If working with an external memory (such as Flash or another SDRAM chip), users could modify the SDRAM interface timing to optimize communication with that specific memory device.
+- Example of Switching Between High-Performance and Low-Power Modes
+```c
 Copier le code
 void SwitchToHighPerformanceMode(void)
 {
@@ -157,6 +198,7 @@ void SwitchToHighPerformanceMode(void)
     SDRAM_SetRowCycleDelay(7);  // Longer row cycle delay
     SDRAM_SetSelfRefreshTime(5);  // Self-refresh timing for high performance
 }
+
 
 void SwitchToLowPowerMode(void)
 {
@@ -173,6 +215,9 @@ void SwitchToLowPowerMode(void)
 ```
 - Example of Managing SDRAM Timing for External Memory Interface
 ```c
+```
+- Example of Managing SDRAM Timing for External Memory Interface
+```c
 Copier le code
 void OptimizeForExternalMemory(void)
 {
@@ -183,6 +228,15 @@ void OptimizeForExternalMemory(void)
     // Optionally change memory configuration if needed
     SDRAM_SetCASLatency(FMC_SDRAM_CAS_LATENCY_3);  // Higher CAS latency for external memory compatibility
 }
+```
+# Conclusion
+
+- By providing both global and unitary APIs for SDRAM timing and memory configurations:
+
+- You make the SDRAM interface adaptable for a wide range of applications.
+- The system can be optimized dynamically, enhancing both performance and power efficiency.
+- You offer granular control for those who need it, while keeping things simple for those who prefer a global configuration.
+- This combination will improve the experience for users, especially those working with external memories in embedded systems, making SDRAM management easier and more efficient.
 ```
 # Conclusion
 
